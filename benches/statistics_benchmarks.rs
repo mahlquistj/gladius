@@ -12,8 +12,10 @@ fn benchmark_statistics_update(c: &mut Criterion) {
 
     let config = Configuration::default();
     let update_counts = if std::env::var("CI").is_ok() {
-        group.sample_size(10).measurement_time(std::time::Duration::from_secs(5));
-        vec![100, 500]  // Reduced for CI
+        group
+            .sample_size(10)
+            .measurement_time(std::time::Duration::from_secs(5));
+        vec![100, 500] // Reduced for CI
     } else {
         vec![100, 1000, 10000]
     };
@@ -58,8 +60,10 @@ fn benchmark_statistics_tracker_update(c: &mut Criterion) {
 
     let config = Configuration::default();
     let update_counts = if std::env::var("CI").is_ok() {
-        group.sample_size(10).measurement_time(std::time::Duration::from_secs(5));
-        vec![100, 500]  // Reduced for CI
+        group
+            .sample_size(10)
+            .measurement_time(std::time::Duration::from_secs(5));
+        vec![100, 500] // Reduced for CI
     } else {
         vec![100, 1000, 10000]
     };
@@ -102,8 +106,10 @@ fn benchmark_measurement_creation(c: &mut Criterion) {
 
     // Generate varying amounts of historical data
     let history_sizes = if std::env::var("CI").is_ok() {
-        group.sample_size(10).measurement_time(std::time::Duration::from_secs(5));
-        vec![10, 50]  // Reduced for CI
+        group
+            .sample_size(10)
+            .measurement_time(std::time::Duration::from_secs(5));
+        vec![10, 50] // Reduced for CI
     } else {
         vec![10, 100, 1000]
     };
@@ -169,8 +175,10 @@ fn benchmark_statistics_finalization(c: &mut Criterion) {
 
     let config = Configuration::default();
     let input_counts = if std::env::var("CI").is_ok() {
-        group.sample_size(10).measurement_time(std::time::Duration::from_secs(5));
-        vec![500, 1000]  // Reduced for CI
+        group
+            .sample_size(10)
+            .measurement_time(std::time::Duration::from_secs(5));
+        vec![500, 1000] // Reduced for CI
     } else {
         vec![1000, 5000, 10000]
     };
@@ -212,7 +220,9 @@ fn benchmark_character_result_processing(c: &mut Criterion) {
     let mut group = c.benchmark_group("character_result_processing");
 
     if std::env::var("CI").is_ok() {
-        group.sample_size(10).measurement_time(std::time::Duration::from_secs(5));
+        group
+            .sample_size(10)
+            .measurement_time(std::time::Duration::from_secs(5));
     }
 
     let results = vec![
@@ -254,10 +264,12 @@ fn benchmark_error_tracking(c: &mut Criterion) {
 
     // Test scenarios with different error rates
     let (error_rates, input_count) = if std::env::var("CI").is_ok() {
-        group.sample_size(10).measurement_time(std::time::Duration::from_secs(5));
-        (vec![0.05, 0.10], 500)  // Reduced error rate variations for CI
+        group
+            .sample_size(10)
+            .measurement_time(std::time::Duration::from_secs(5));
+        (vec![0.05, 0.10], 500) // Reduced error rate variations for CI
     } else {
-        (vec![0.01, 0.05, 0.10, 0.20], 1000)  // 1%, 5%, 10%, 20%
+        (vec![0.01, 0.05, 0.10, 0.20], 1000) // 1%, 5%, 10%, 20%
     };
 
     for error_rate in error_rates {
@@ -301,10 +313,12 @@ fn benchmark_measurement_intervals(c: &mut Criterion) {
 
     // Test different measurement intervals
     let (intervals, input_count) = if std::env::var("CI").is_ok() {
-        group.sample_size(10).measurement_time(std::time::Duration::from_secs(5));
-        (vec![1.0, 2.0], 500)  // Reduced interval variations for CI
+        group
+            .sample_size(10)
+            .measurement_time(std::time::Duration::from_secs(5));
+        (vec![1.0, 2.0], 500) // Reduced interval variations for CI
     } else {
-        (vec![0.5, 1.0, 2.0, 5.0], 1000)  // seconds
+        (vec![0.5, 1.0, 2.0, 5.0], 1000) // seconds
     };
 
     for interval in intervals {
@@ -356,4 +370,3 @@ criterion_group!(
     benchmark_measurement_intervals
 );
 criterion_main!(benches);
-

@@ -1,6 +1,6 @@
 use std::hint::black_box;
 
-use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
+use criterion::{BenchmarkId, Criterion, criterion_group, criterion_main};
 use gladius::math::{Accuracy, Consistency, Ipm, Wpm};
 
 fn benchmark_wpm_calculations(c: &mut Criterion) {
@@ -8,10 +8,12 @@ fn benchmark_wpm_calculations(c: &mut Criterion) {
 
     // Configure for CI-friendly execution
     let test_cases = if std::env::var("CI").is_ok() {
-        group.sample_size(10).measurement_time(std::time::Duration::from_secs(5));
+        group
+            .sample_size(10)
+            .measurement_time(std::time::Duration::from_secs(5));
         vec![
-            (100, 5, 2, 1.0),    // Small dataset
-            (500, 25, 10, 5.0),  // Medium dataset (reduced)
+            (100, 5, 2, 1.0),   // Small dataset
+            (500, 25, 10, 5.0), // Medium dataset (reduced)
         ]
     } else {
         vec![
@@ -48,10 +50,12 @@ fn benchmark_ipm_calculations(c: &mut Criterion) {
     let mut group = c.benchmark_group("ipm_calculations");
 
     let test_cases = if std::env::var("CI").is_ok() {
-        group.sample_size(10).measurement_time(std::time::Duration::from_secs(5));
+        group
+            .sample_size(10)
+            .measurement_time(std::time::Duration::from_secs(5));
         vec![
-            (100, 120, 1.0),      // Small dataset
-            (500, 600, 5.0),      // Medium dataset (reduced)
+            (100, 120, 1.0), // Small dataset
+            (500, 600, 5.0), // Medium dataset (reduced)
         ]
     } else {
         vec![
@@ -87,10 +91,12 @@ fn benchmark_accuracy_calculations(c: &mut Criterion) {
     let mut group = c.benchmark_group("accuracy_calculations");
 
     let test_cases = if std::env::var("CI").is_ok() {
-        group.sample_size(10).measurement_time(std::time::Duration::from_secs(5));
+        group
+            .sample_size(10)
+            .measurement_time(std::time::Duration::from_secs(5));
         vec![
-            (100, 5, 2),      // Small dataset
-            (500, 25, 10),    // Medium dataset (reduced)
+            (100, 5, 2),   // Small dataset
+            (500, 25, 10), // Medium dataset (reduced)
         ]
     } else {
         vec![
@@ -124,8 +130,10 @@ fn benchmark_consistency_calculations(c: &mut Criterion) {
 
     // Generate test data sets of different sizes
     let test_sizes = if std::env::var("CI").is_ok() {
-        group.sample_size(10).measurement_time(std::time::Duration::from_secs(5));
-        vec![10, 50]  // Reduced sizes for CI
+        group
+            .sample_size(10)
+            .measurement_time(std::time::Duration::from_secs(5));
+        vec![10, 50] // Reduced sizes for CI
     } else {
         vec![10, 100, 1000]
     };
@@ -158,8 +166,10 @@ fn benchmark_consistency_std_dev_algorithms(c: &mut Criterion) {
 
     // Test different algorithms for standard deviation calculation
     let sizes = if std::env::var("CI").is_ok() {
-        group.sample_size(10).measurement_time(std::time::Duration::from_secs(5));
-        vec![10, 100]  // Reduced sizes for CI
+        group
+            .sample_size(10)
+            .measurement_time(std::time::Duration::from_secs(5));
+        vec![10, 100] // Reduced sizes for CI
     } else {
         vec![10, 100, 1000, 10000]
     };

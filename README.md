@@ -166,9 +166,8 @@ Gladius supports Rust 1.88.0 and later.
 
 ## 🤝 Contributing
 
-Gladius development happens alongside OctoType. Contributions are welcome!
-Please see the [OctoType repository](https://github.com/mahlquistj/octotype) for
-contribution guidelines.
+If you have an idea, bug-report or alike, feel free to open an issue or PR -
+It's more than welcome!
 
 ## 📄 License
 

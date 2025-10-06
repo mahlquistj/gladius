@@ -1,0 +1,63 @@
+name: Benchmarks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+  CI: true
+
+jobs:
+  benchmark:
+    name: Run Benchmarks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Install Bencher CLI
+        uses: bencherdev/bencher@main
+
+      - name: Cache Cargo dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Run Math Benchmarks
+        run: |
+          bencher run \
+            --project gladius \
+            --token "${{ secrets.BENCHER_API_KEY }}" \
+            --branch "${{ github.head_ref || github.ref_name }}" \
+            --testbed ubuntu-latest \
+            --adapter rust_criterion \
+            --err \
+            "cargo bench --bench math_benchmarks"
+
+      - name: Run Statistics Benchmarks
+        run: |
+          bencher run \
+            --project gladius \
+            --token "${{ secrets.BENCHER_API_KEY }}" \
+            --branch "${{ github.head_ref || github.ref_name }}" \
+            --testbed ubuntu-latest \
+            --adapter rust_criterion \
+            --err \
+            "cargo bench --bench statistics_benchmarks"

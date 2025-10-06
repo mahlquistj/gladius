@@ -1,17 +1,25 @@
 use std::hint::black_box;
 
-use criterion::{BenchmarkId, Criterion, criterion_group, criterion_main};
+use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
 use gladius::math::{Accuracy, Consistency, Ipm, Wpm};
 
 fn benchmark_wpm_calculations(c: &mut Criterion) {
     let mut group = c.benchmark_group("wpm_calculations");
 
-    // Benchmark with various input sizes
-    let test_cases = vec![
-        (100, 5, 2, 1.0),         // Small dataset
-        (1000, 50, 20, 10.0),     // Medium dataset
-        (10000, 500, 200, 100.0), // Large dataset
-    ];
+    // Configure for CI-friendly execution
+    let test_cases = if std::env::var("CI").is_ok() {
+        group.sample_size(10).measurement_time(std::time::Duration::from_secs(5));
+        vec![
+            (100, 5, 2, 1.0),    // Small dataset
+            (500, 25, 10, 5.0),  // Medium dataset (reduced)
+        ]
+    } else {
+        vec![
+            (100, 5, 2, 1.0),         // Small dataset
+            (1000, 50, 20, 10.0),     // Medium dataset
+            (10000, 500, 200, 100.0), // Large dataset
+        ]
+    };
 
     for (characters, errors, corrections, minutes) in test_cases {
         group.bench_with_input(
@@ -39,11 +47,19 @@ fn benchmark_wpm_calculations(c: &mut Criterion) {
 fn benchmark_ipm_calculations(c: &mut Criterion) {
     let mut group = c.benchmark_group("ipm_calculations");
 
-    let test_cases = vec![
-        (100, 120, 1.0),       // Small dataset
-        (1000, 1200, 10.0),    // Medium dataset
-        (10000, 12000, 100.0), // Large dataset
-    ];
+    let test_cases = if std::env::var("CI").is_ok() {
+        group.sample_size(10).measurement_time(std::time::Duration::from_secs(5));
+        vec![
+            (100, 120, 1.0),      // Small dataset
+            (500, 600, 5.0),      // Medium dataset (reduced)
+        ]
+    } else {
+        vec![
+            (100, 120, 1.0),       // Small dataset
+            (1000, 1200, 10.0),    // Medium dataset
+            (10000, 12000, 100.0), // Large dataset
+        ]
+    };
 
     for (actual_inputs, raw_inputs, minutes) in test_cases {
         group.bench_with_input(
@@ -70,11 +86,19 @@ fn benchmark_ipm_calculations(c: &mut Criterion) {
 fn benchmark_accuracy_calculations(c: &mut Criterion) {
     let mut group = c.benchmark_group("accuracy_calculations");
 
-    let test_cases = vec![
-        (100, 5, 2),       // Small dataset
-        (1000, 50, 20),    // Medium dataset
-        (10000, 500, 200), // Large dataset
-    ];
+    let test_cases = if std::env::var("CI").is_ok() {
+        group.sample_size(10).measurement_time(std::time::Duration::from_secs(5));
+        vec![
+            (100, 5, 2),      // Small dataset
+            (500, 25, 10),    // Medium dataset (reduced)
+        ]
+    } else {
+        vec![
+            (100, 5, 2),       // Small dataset
+            (1000, 50, 20),    // Medium dataset
+            (10000, 500, 200), // Large dataset
+        ]
+    };
 
     for (input_len, total_errors, total_corrections) in test_cases {
         group.bench_with_input(
@@ -99,7 +123,12 @@ fn benchmark_consistency_calculations(c: &mut Criterion) {
     let mut group = c.benchmark_group("consistency_calculations");
 
     // Generate test data sets of different sizes
-    let test_sizes = vec![10, 100, 1000];
+    let test_sizes = if std::env::var("CI").is_ok() {
+        group.sample_size(10).measurement_time(std::time::Duration::from_secs(5));
+        vec![10, 50]  // Reduced sizes for CI
+    } else {
+        vec![10, 100, 1000]
+    };
 
     for size in test_sizes {
         // Generate realistic WPM measurements with some variation
@@ -128,7 +157,12 @@ fn benchmark_consistency_std_dev_algorithms(c: &mut Criterion) {
     let mut group = c.benchmark_group("consistency_std_dev");
 
     // Test different algorithms for standard deviation calculation
-    let sizes = vec![10, 100, 1000, 10000];
+    let sizes = if std::env::var("CI").is_ok() {
+        group.sample_size(10).measurement_time(std::time::Duration::from_secs(5));
+        vec![10, 100]  // Reduced sizes for CI
+    } else {
+        vec![10, 100, 1000, 10000]
+    };
 
     for size in sizes {
         let values: Vec<f64> = (0..size)
@@ -197,4 +231,3 @@ criterion_group!(
     benchmark_consistency_std_dev_algorithms
 );
 criterion_main!(benches);
-

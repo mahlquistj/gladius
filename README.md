@@ -5,12 +5,6 @@ applications. It provides real-time typing analysis, flexible rendering systems,
 and detailed performance statistics with a focus on accuracy, performance, and
 ease of use.
 
-**Gladius is the core library powering
-[OctoType](https://github.com/mahlquistj/octotype)** and follows the same
-versioning scheme. When OctoType releases version `0.3.2`, Gladius is also at
-version `0.3.2`, ensuring compatibility and synchronized development. Gladius
-might be split into it's own repository later.
-
 ## 🚀 Quick Start
 
 ```rust

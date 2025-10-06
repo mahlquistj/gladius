@@ -61,3 +61,4 @@ jobs:
             --adapter rust_criterion \
             --err \
             "cargo bench --bench statistics_benchmarks"
+

@@ -1,5 +1,11 @@
 # Gladius - High-Performance Typing Trainer Library
 
+<div align="center">
+
+[![Docs Badge]][Docs]
+
+</div>
+
 Gladius is a comprehensive Rust library for building typing trainer
 applications. It provides real-time typing analysis, flexible rendering systems,
 and detailed performance statistics with a focus on accuracy, performance, and
@@ -180,3 +186,8 @@ the internal, feather-shaped shell of a squid.
 
 Since gladius is the **core** library of **Octo**Type, this name felt very
 fitting.
+
+<!-- LINKS -->
+
+[Docs]: https://docs.rs/gladius/latest/gladius/
+[Docs Badge]: https://img.shields.io/docsrs/gladius

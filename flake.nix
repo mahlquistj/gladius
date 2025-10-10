@@ -24,7 +24,15 @@
         ...
       }: let
         rustToolchain = pkgs.rust-bin.stable.latest.default;
-        tools = with pkgs; [bacon cargo-nextest cargo-expand cargo-msrv];
+        tools = with pkgs; [
+          just
+          bacon
+          cargo-nextest
+          cargo-expand
+          cargo-msrv
+          cargo-binstall
+          git-cliff
+        ];
       in {
         _module.args.pkgs = import inputs.nixpkgs {
           inherit system;
@@ -35,6 +43,22 @@
           buildInputs = [rustToolchain];
           packages = [rustToolchain tools];
           RUST_SRC_PATH = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
+          shellHook = ''
+            export PATH="$HOME/.cargo/bin:$PATH"
+            echo "Installing committed..."
+            cargo binstall --no-confirm committed
+            echo "Installing git hooks..."
+            if [ ! -f .git/hooks/commit-msg ]; then
+              cat > .git/hooks/commit-msg << 'EOF'
+            #!/usr/bin/env bash
+            committed --commit-file "$1" --config .committed.toml
+            EOF
+              chmod +x .git/hooks/commit-msg
+              echo "commit-msg hook installed"
+            else
+              echo "commit-msg hook already exists"
+            fi
+          '';
         };
       };
     };

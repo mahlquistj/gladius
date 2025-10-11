@@ -24,6 +24,8 @@ jobs:
         with:
           components: rustfmt, clippy
 
+      - uses: extractions/setup-just@v3
+
       - name: Install Bencher CLI
         uses: bencherdev/bencher@main
 
@@ -40,7 +42,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-
 
-      - name: Run Math Benchmarks
+      - name: Run Benchmarks
         run: |
           bencher run \
             --project gladius \
@@ -49,16 +51,4 @@ jobs:
             --testbed ubuntu-latest \
             --adapter rust_criterion \
             --err \
-            "cargo bench --bench math_benchmarks"
-
-      - name: Run Statistics Benchmarks
-        run: |
-          bencher run \
-            --project gladius \
-            --token "${{ secrets.BENCHER_API_KEY }}" \
-            --branch "${{ github.head_ref || github.ref_name }}" \
-            --testbed ubuntu-latest \
-            --adapter rust_criterion \
-            --err \
-            "cargo bench --bench statistics_benchmarks"
-
+            "just bench"

@@ -174,9 +174,17 @@ pub struct Statistics {
     pub input_history: Vec<Input>,
     /// Detailed counters for all typing events
     pub counters: CounterData,
-    /// The length of the original input
+    /// The length of the target text (buffer size)
+    ///
+    /// This represents the total number of characters in the text that needs to be typed,
+    /// not how many the user has actually typed.
     pub input_length: usize,
-    /// Amount of non-typed characters
+    /// Number of characters the user hasn't typed yet
+    ///
+    /// Calculated as: `text_length - current_position`
+    ///
+    /// For example, if the target text is "hello" (5 chars) and the user has typed
+    /// "hel" (3 chars), then `missing_characters = 2`.
     pub missing_characters: usize,
 }
 
@@ -292,11 +300,22 @@ impl TempStatistics {
     ///
     /// Calculates final metrics based on the complete session data and returns
     /// a comprehensive Statistics struct suitable for analysis and storage.
-    pub fn finalize(mut self, duration: Duration, input_length: usize) -> Statistics {
+    ///
+    /// # Parameters
+    ///
+    /// * `duration` - Total duration of the typing session
+    /// * `text_length` - Length of the target text (buffer size)
+    /// * `current_position` - How many characters the user has currently typed
+    pub fn finalize(
+        mut self,
+        duration: Duration,
+        text_length: usize,
+        current_position: usize,
+    ) -> Statistics {
         let total_time = duration.as_secs_f64();
-        self.take_measurement(total_time, input_length);
+        self.take_measurement(total_time, current_position);
 
-        let missing_characters = self.input_history.len().saturating_sub(input_length);
+        let missing_characters = text_length.saturating_sub(current_position);
 
         let Self {
             measurements,
@@ -323,8 +342,201 @@ impl TempStatistics {
             measurements,
             input_history,
             counters,
-            input_length,
+            input_length: text_length,
             missing_characters,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_input_length_and_missing_characters() {
+        let mut temp_stats = TempStatistics::default();
+        let config = Configuration::default();
+
+        // Simulate typing "hello" (5 characters) but only getting to position 3
+        // Target text: "hello" (5 chars)
+        // User types: "hel" (3 chars, with some errors along the way)
+
+        // Type 'h' correctly (position=1)
+        temp_stats.update(
+            'h',
+            CharacterResult::Correct,
+            1,
+            Duration::from_secs(0),
+            &config,
+        );
+
+        // Type 'e' correctly (position=2)
+        temp_stats.update(
+            'e',
+            CharacterResult::Correct,
+            2,
+            Duration::from_secs(0),
+            &config,
+        );
+
+        // Type 'x' wrong (position=3, but wrong char)
+        temp_stats.update(
+            'x',
+            CharacterResult::Wrong,
+            3,
+            Duration::from_secs(0),
+            &config,
+        );
+
+        // Delete 'x' (back to position=2)
+        temp_stats.update(
+            'x',
+            CharacterResult::Deleted(crate::State::Wrong),
+            2,
+            Duration::from_secs(0),
+            &config,
+        );
+
+        // Type 'l' corrected (position=3)
+        temp_stats.update(
+            'l',
+            CharacterResult::Corrected,
+            3,
+            Duration::from_secs(1),
+            &config,
+        );
+
+        // Finalize: target is 5 chars ("hello"), but user only typed 3 ("hel")
+        let target_text_length = 5;
+        let current_position = 3;
+        let stats =
+            temp_stats.finalize(Duration::from_secs(1), target_text_length, current_position);
+
+        // Verify input_length is the target text length
+        assert_eq!(
+            stats.input_length, 5,
+            "input_length should be the target text length"
+        );
+
+        // Verify missing_characters = target_length - current_position = 5 - 3 = 2
+        assert_eq!(
+            stats.missing_characters, 2,
+            "missing_characters should be 2 (still need to type 'lo')"
+        );
+
+        // Verify input_history contains all keystrokes (including the error and delete)
+        assert_eq!(
+            stats.input_history.len(),
+            5,
+            "input_history should contain all 5 keystrokes"
+        );
+    }
+
+    #[test]
+    fn test_missing_characters_with_no_errors() {
+        let mut temp_stats = TempStatistics::default();
+        let config = Configuration::default();
+
+        // Simulate typing "hi" perfectly with no errors and completing it
+        temp_stats.update(
+            'h',
+            CharacterResult::Correct,
+            1,
+            Duration::from_secs(0),
+            &config,
+        );
+        temp_stats.update(
+            'i',
+            CharacterResult::Correct,
+            2,
+            Duration::from_secs(1),
+            &config,
+        );
+
+        let target_text_length = 2;
+        let current_position = 2; // Completed typing
+        let stats =
+            temp_stats.finalize(Duration::from_secs(1), target_text_length, current_position);
+
+        // With perfect typing and completion
+        assert_eq!(
+            stats.input_length, 2,
+            "input_length should be target text length"
+        );
+        assert_eq!(
+            stats.input_history.len(),
+            2,
+            "input_history should contain 2 keystrokes"
+        );
+        assert_eq!(
+            stats.missing_characters, 0,
+            "missing_characters should be 0 when fully typed"
+        );
+    }
+
+    #[test]
+    fn test_missing_characters_partial_completion() {
+        let mut temp_stats = TempStatistics::default();
+        let config = Configuration::default();
+
+        // Target text is "hello" (5 chars) but user only types "he" (2 chars)
+        temp_stats.update(
+            'h',
+            CharacterResult::Correct,
+            1,
+            Duration::from_secs(0),
+            &config,
+        );
+        temp_stats.update(
+            'e',
+            CharacterResult::Correct,
+            2,
+            Duration::from_secs(1),
+            &config,
+        );
+
+        let target_text_length = 5; // "hello"
+        let current_position = 2; // Only typed "he"
+        let stats =
+            temp_stats.finalize(Duration::from_secs(1), target_text_length, current_position);
+
+        assert_eq!(
+            stats.input_length, 5,
+            "input_length should be target text length"
+        );
+        assert_eq!(
+            stats.input_history.len(),
+            2,
+            "input_history should contain 2 keystrokes"
+        );
+        assert_eq!(
+            stats.missing_characters, 3,
+            "missing_characters should be 3 (still need 'llo')"
+        );
+    }
+
+    #[test]
+    fn test_missing_characters_no_typing() {
+        // Edge case: User hasn't typed anything yet
+        let temp_stats = TempStatistics::default();
+
+        let target_text_length = 10;
+        let current_position = 0; // Haven't typed anything
+        let stats =
+            temp_stats.finalize(Duration::from_secs(0), target_text_length, current_position);
+
+        assert_eq!(
+            stats.input_length, 10,
+            "input_length should be target text length"
+        );
+        assert_eq!(
+            stats.input_history.len(),
+            0,
+            "input_history should be empty"
+        );
+        assert_eq!(
+            stats.missing_characters, 10,
+            "missing_characters should equal target length when nothing typed"
+        );
     }
 }

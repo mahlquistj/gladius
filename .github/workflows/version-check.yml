@@ -3,9 +3,6 @@ name: Check Version Updated
 on:
   pull_request:
     branches: [main]
-    paths-ignore:
-      - "*.nix"
-      - "flake.lock"
 
 jobs:
   check-version:

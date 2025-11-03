@@ -174,6 +174,10 @@ pub struct Statistics {
     pub input_history: Vec<Input>,
     /// Detailed counters for all typing events
     pub counters: CounterData,
+    /// The length of the original input
+    pub input_length: usize,
+    /// Amount of non-typed characters
+    pub missing_characters: usize,
 }
 
 /// Real-time statistics accumulator for active typing sessions
@@ -288,9 +292,11 @@ impl TempStatistics {
     ///
     /// Calculates final metrics based on the complete session data and returns
     /// a comprehensive Statistics struct suitable for analysis and storage.
-    pub fn finalize(mut self, duration: Duration, input_len: usize) -> Statistics {
+    pub fn finalize(mut self, duration: Duration, input_length: usize) -> Statistics {
         let total_time = duration.as_secs_f64();
-        self.take_measurement(total_time, input_len);
+        self.take_measurement(total_time, input_length);
+
+        let missing_characters = self.input_history.len().saturating_sub(input_length);
 
         let Self {
             measurements,
@@ -317,6 +323,8 @@ impl TempStatistics {
             measurements,
             input_history,
             counters,
+            input_length,
+            missing_characters,
         }
     }
 }

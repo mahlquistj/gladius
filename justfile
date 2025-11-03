@@ -5,7 +5,7 @@ list:
     @just --list
 
 # Run tests
-test:
+test ARGS="":
     @cargo nextest run --hide-progress-bar --failure-output final {{ARGS}}
 
 # Run linters and formatting

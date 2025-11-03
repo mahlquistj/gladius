@@ -1,0 +1,30 @@
+name: Check
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+      - uses: extractions/setup-just@v3
+      - name: Install cargo-nextest
+        uses: taiki-e/install-action@nextest
+      - name: Lint
+        run: just lint
+      - name: Build
+        run: just build
+      - name: Run tests
+        run: just test

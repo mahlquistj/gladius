@@ -2,7 +2,7 @@
 name = "gladius"
 description = "A library for writing typing-trainers"
 readme = "README.md"
-version = "0.4.2" 
+version = "1.0.0" 
 edition = "2024" 
 authors = ["Mads Ahlquist Jensen <madsaj10@outlook.com>"]
 repository = "https://github.com/mahlquistj/octotype"

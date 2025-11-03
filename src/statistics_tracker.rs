@@ -31,8 +31,8 @@
 //!
 //! // Mark session complete and get final statistics.
 //! tracker.mark_completed();
-//! // The tracker does not handle the input, so it needs to know the final input length
-//! let final_stats = tracker.finalize(2); // 2 = final input length
+//! // The tracker needs to know both the target text length and current position
+//! let final_stats = tracker.finalize(2, 2); // text_length=2, current_position=2
 //! ```
 
 use web_time::{Duration, Instant};
@@ -172,7 +172,8 @@ impl StatisticsTracker {
     ///
     /// # Parameters
     ///
-    /// * `input_len` - The final length of the typed input
+    /// * `text_length` - Length of the target text (buffer size)
+    /// * `current_position` - How many characters the user has currently typed
     ///
     /// # Returns
     ///
@@ -182,9 +183,10 @@ impl StatisticsTracker {
     ///
     /// Returns an error if called before any keystrokes have been processed.
     /// The session must be started (but not necessarily completed) to finalize.
-    pub fn finalize(self, input_len: usize) -> Statistics {
+    pub fn finalize(self, text_length: usize, current_position: usize) -> Statistics {
         let total_duration = self.total_duration().unwrap_or(Duration::ZERO);
-        self.stats.finalize(total_duration, input_len)
+        self.stats
+            .finalize(total_duration, text_length, current_position)
     }
 }
 

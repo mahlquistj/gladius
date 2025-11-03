@@ -617,7 +617,8 @@ impl TypingSession {
     /// ```
     pub fn finalize(self) -> Statistics {
         let text_len = self.text_len();
-        self.statistics.finalize(text_len)
+        let input_len = self.input_len();
+        self.statistics.finalize(text_len, input_len)
     }
 }
 

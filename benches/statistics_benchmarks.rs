@@ -207,7 +207,11 @@ fn benchmark_statistics_finalization(c: &mut Criterion) {
             |b, (stats, final_duration, input_count)| {
                 b.iter(|| {
                     let stats_clone = stats.clone();
-                    stats_clone.finalize(black_box(*final_duration), black_box(*input_count))
+                    stats_clone.finalize(
+                        black_box(*final_duration),
+                        black_box(*input_count), // text_length
+                        black_box(*input_count), // current_position (fully typed)
+                    )
                 })
             },
         );
